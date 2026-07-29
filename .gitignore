@@ -1,0 +1,25 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.cacheitems
+*.dll
+*.exe
+*.pdb
+
+## IDE
+.vs/
+.vscode/
+.idea/
+*.sln.DotSettings.user
+
+## Build
+packages/
+*.nupkg
+*.log
+
+## OS
+Thumbs.db
+.DS_Store
