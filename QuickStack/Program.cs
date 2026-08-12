@@ -3,31 +3,51 @@ using QuickStack.Services;
 using QuickStack.UI;
 using Spectre.Console;
 
-var argsList = args.ToList();
-
-if (argsList.Count > 0 && argsList[0].Equals("permissions", StringComparison.OrdinalIgnoreCase))
+try
 {
-    return await RunPermissionsCommand(argsList.Skip(1).ToArray());
+    return await Run();
 }
-
-HeaderUI.DisplayHeader();
-
-var options = PromptUI.CollectOptions();
-
-if (!ValidateProjectName(options.ProjectName, out var sanitizedName, out var errorMsg))
+catch (Exception ex)
 {
-    AnsiConsole.MarkupLine($"[red]Error: {errorMsg}[/]");
+    AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message.EscapeMarkup()}");
     return 1;
 }
-options.ProjectName = sanitizedName;
 
-if (SummaryUI.ConfirmAndDisplay(options))
+async Task<int> Run()
 {
-    var generator = new ProjectGeneratorService(options);
-    generator.Generate();
-}
+    var argsList = args.ToList();
 
-return 0;
+    if (argsList.Count > 0 && argsList[0].Equals("permissions", StringComparison.OrdinalIgnoreCase))
+    {
+        return await RunPermissionsCommand(argsList.Skip(1).ToArray());
+    }
+
+    if (Console.IsInputRedirected)
+    {
+        AnsiConsole.MarkupLine("[yellow]QuickStack requires an interactive terminal.[/]");
+        AnsiConsole.MarkupLine("Run it directly in a console window, or use: quickstack permissions <command>");
+        return 1;
+    }
+
+    HeaderUI.DisplayHeader();
+
+    var options = PromptUI.CollectOptions();
+
+    if (!ValidateProjectName(options.ProjectName, out var sanitizedName, out var errorMsg))
+    {
+        AnsiConsole.MarkupLine($"[red]Error: {errorMsg}[/]");
+        return 1;
+    }
+    options.ProjectName = sanitizedName;
+
+    if (SummaryUI.ConfirmAndDisplay(options))
+    {
+        var generator = new ProjectGeneratorService(options);
+        generator.Generate();
+    }
+
+    return 0;
+}
 
 /// <summary>Runs a permission management command against a scaffolded project.</summary>
 /// <param name="args">The subcommand and its options.</param>

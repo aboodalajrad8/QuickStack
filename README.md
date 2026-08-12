@@ -1,69 +1,105 @@
 # QuickStack
 
-Rapid .NET backend project generator — scaffolds a production-ready Clean Architecture API with authentication, authorization, and infrastructure in seconds.
-
-```bash
-dotnet tool install --global QuickStack.cli --version 1.0.0
-quickstack
-```
+**Rapid .NET Backend Environment Generator** — an interactive CLI that scaffolds a production-ready ASP.NET Core backend with Clean Architecture, JWT authentication, a full permission system, and more. One command, zero configuration.
 
 ## Features
 
-- **Clean Architecture** — Domain, Application, Infrastructure, Api layers with dependency inversion
-- **Authentication** — ASP.NET Core Identity + JWT or Custom JWT (password hashing, refresh tokens, email verification, 2FA)
-- **Authorization** — Declarative permission system with role/user-level permissions, resource-based ownership checks, audit logging, discovery & sync CLI
-- **Databases** — SQL Server, PostgreSQL, MySQL, SQLite — connection strings match your selection
-- **Infrastructure** — Rate limiting, global exception handling, Serilog logging, CORS, security headers
-- **Docker** — Multi-stage Dockerfile + docker-compose.yml
-- **Swagger** — Bearer token support via `BearerSecuritySchemeTransformer`
-
-## Quick Start
-
-```bash
-# Install
-dotnet tool install --global QuickStack.cli
-
-# Scaffold
-quickstack
-
-# Run the generated project
-cd ./MyApi/src/Api
-dotnet run
-```
-
-## CLI Commands
-
-| Command | Description |
-|---------|-------------|
-| `quickstack` | Interactive scaffolding wizard |
-| `quickstack permissions scan` | Discover permissions from code |
-| `quickstack permissions sync` | Apply permissions to database |
-| `quickstack permissions diff` | Dry-run, exits non-zero on drift |
-| `quickstack permissions export` | Export permissions (json/csv/markdown) |
-| `quickstack permissions prune` | Remove orphaned permissions |
-| `quickstack permissions changelog` | View permission change history |
-
-## Generated Structure
-
-```
-Project/
-├── src/
-│   ├── Api/               Controllers, Middlewares, Filters, Program.cs
-│   ├── Application/       DTOs, Interfaces, Validators
-│   ├── Domain/            Entities, Enums, Exceptions
-│   └── Infrastructure/    Persistence, Services, Authorization, DependencyInjection
-├── Dockerfile
-├── docker-compose.yml
-└── README.md
-```
-
-## Project Name Rules
-
-- Spaces converted to underscores
-- C# reserved keywords rejected
-- Must not start with a digit
-- Invalid filename characters rejected
+- **Clean Architecture** — 4 projects: `Domain`, `Application`, `Infrastructure`, `Api` (classic Vertical Layers + Clean Architecture folder layout)
+- **Authentication** (choose one):
+  - ASP.NET Core Identity + JWT
+  - Lightweight Custom JWT (BCrypt, no Identity dependency)
+  - None
+- **Auth sub-features**: refresh token rotation with family-wide revocation, email verification, 2FA, login via email / phone / username / both
+- **Permission system** — `RequirePermission` / `RequireAnyPermission` attributes, role & user permission management, audit logs, append-only audit tables, permission seeding
+- **Databases**: SQL Server, PostgreSQL, MySQL, SQLite, or none
+- **Features**: Swagger with JWT bearer input, Serilog, global exception handling middleware, rate limiting, multi-stage Dockerfile + docker-compose
+- **CLI subcommand**: `quickstack permissions scan|sync|diff|export|prune|changelog`
 
 ## Requirements
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) (required to scaffold and run generated projects)
+- A database of your choice (optional — "None" is supported)
+
+## Usage
+
+### Option A — Download the standalone exe (no .NET install needed to run the tool)
+
+Grab `quickstack.exe` from the [latest release](https://github.com/aboodalajrad8/QuickStack/releases), open a terminal, and run it:
+
+```bash
+./quickstack.exe
+```
+
+### Option B — Build from source
+
+```bash
+git clone https://github.com/aboodalajrad8/QuickStack.git
+cd QuickStack/QuickStack
+dotnet run
+```
+
+### Option C — Install as a .NET tool
+
+```bash
+dotnet tool install --global QuickStack.cli
+quickstack
+```
+
+### Option D — Publish a self-contained exe (for sharing)
+
+```bash
+dotnet publish QuickStack/QuickStack.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish
+```
+
+## Interactive prompts
+
+The CLI walks you through:
+
+1. **Project name** (validated against C# keywords and invalid filename characters)
+2. **Output directory**
+3. **Database** — SQL Server, PostgreSQL, MySQL, SQLite, None
+4. **Authentication type** — ASP.NET Identity + JWT, Custom JWT, None
+5. **Login identifier** — Email, Phone Number, Both, Username
+6. **Auth features** — Refresh Tokens, Account Verification (email confirmation), 2FA
+7. **Email provider** (if verification enabled) — Resend or Google Gmail SMTP
+8. **Features** — Serilog, Global Exception Handling, Docker, Rate Limiting (JWT + Swagger is included when auth is on)
+
+A summary table is shown before anything is generated — confirm and go.
+
+## Generated project layout
+
+```
+YourProject/
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
+└── src/
+    ├── Domain/          # Entities, Enums, Exceptions, Common
+    ├── Application/     # DTOs, Interfaces, Authorization abstractions
+    ├── Infrastructure/  # Persistence (EF Core), Services, DependencyInjection
+    └── Api/             # Controllers, Middlewares, Filters, Program.cs
+```
+
+## Permissions CLI
+
+Generated projects expose a permission management CLI. Run it from the QuickStack tool:
+
+```bash
+quickstack permissions scan    # discover permissions from code (no DB writes)
+quickstack permissions sync    # apply discovered permissions to database
+quickstack permissions diff    # dry-run of sync (exits non-zero on drift)
+quickstack permissions export --format:json   # json | csv | markdown
+quickstack permissions prune --yes           # delete orphaned permissions
+quickstack permissions changelog             # print change log history
+```
+
+`--project-path <path>` points at a scaffolded project (defaults to the current directory).
+
+## Tech
+
+- .NET 10, Spectre.Console, top-level programs
+- EF Core (provider chosen at prompt time), JWT bearer auth, BCrypt.Net-Next, FluentValidation, MailKit (optional)
+
+## License
+
+[MIT](LICENSE)

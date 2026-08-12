@@ -10,10 +10,23 @@
 	  <ToolCommandName>quickstack</ToolCommandName>
 	  <PackageId>QuickStack.cli</PackageId>
 	  <Version>1.0.0</Version>
+	  <Authors>aboodalajrad8</Authors>
+	  <Description>QuickStack is a scaffolding CLI that generates ASP.NET Core projects with built-in auth, JWT, permissions, rate limiting, and more.</Description>
+	  <PackageTags>scaffold;dotnet;cli;aspnetcore;auth;jwt;permissions</PackageTags>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <RepositoryType>git</RepositoryType>
+	  <RepositoryUrl>https://github.com/aboodalajrad8/QuickStack</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/aboodalajrad8/QuickStack</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.57.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="publish\**" />
+    <None Remove="publish\**" />
+    <Content Remove="publish\**" />
   </ItemGroup>
 
 </Project>

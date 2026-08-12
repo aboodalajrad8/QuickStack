@@ -157,6 +157,11 @@ public class ProjectGeneratorService
         if (_options.SelectedFeatures.Contains(FeatureType.SerilogLogging))
             InstallPackage(apiProject, "Serilog.AspNetCore");
 
+        // The webapi template ships Microsoft.OpenApi 2.0.0, which has a known
+        // DoS vulnerability (GHSA-v5pm-xwqc-g5wc, CVE-2026-49451).
+        // Pin the patched version on the same 2.x line as the template's API.
+        InstallPackage(apiProject, "Microsoft.OpenApi", "2.7.5");
+
         if (_options.AuthType == AuthType.None)
         {
             AnsiConsole.MarkupLine("   [yellow]No auth selected, skipping auth packages.[/]");
@@ -185,6 +190,10 @@ public class ProjectGeneratorService
                 break;
             case DatabaseType.Sqlite:
                 InstallPackage(infraProject, "Microsoft.EntityFrameworkCore.Sqlite");
+                // EF Core Sqlite pulls SQLitePCLRaw 2.1.11, which has a known
+                // vulnerability (GHSA-2m69-gcr7-jv3q, CVE-2025-6965).
+                // Pin the patched 2.1.12 release on the same line.
+                InstallPackage(infraProject, "SQLitePCLRaw.bundle_e_sqlite3", "2.1.12");
                 break;
             case DatabaseType.MySQL:
                 InstallPackage(infraProject, "Pomelo.EntityFrameworkCore.MySql");
@@ -226,14 +235,18 @@ public class ProjectGeneratorService
     }
 
     /// <summary>Installs a single NuGet package with retry logic.</summary>
-    private void InstallPackage(string project, string package)
+    /// <param name="project">Path to the target .csproj file.</param>
+    /// <param name="package">The package ID to install.</param>
+    /// <param name="version">Optional exact version to pin; otherwise the latest stable is used.</param>
+    private void InstallPackage(string project, string package, string? version = null)
     {
-        AnsiConsole.Markup($"   [grey]nuget:[/] {package} ... ");
+        AnsiConsole.Markup($"   [grey]nuget:[/] {package}{(version == null ? "" : $" ({version})")} ... ");
 
         bool success = false;
         for (int attempt = 0; attempt < 2; attempt++)
         {
-            success = RunDotnetCommand($"add \"{project}\" package {package}", 120_000);
+            var versionArg = version == null ? "" : $" --version {version}";
+            success = RunDotnetCommand($"add \"{project}\" package {package}{versionArg}", 120_000);
             if (success) break;
             if (attempt == 0)
                 AnsiConsole.Markup(" [yellow]retrying...[/] ");

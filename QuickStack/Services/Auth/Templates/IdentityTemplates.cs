@@ -39,9 +39,7 @@ public class AppUser : IdentityUser
 """
             : "";
 
-        var domainUsing = o.AuthFeatures.Contains(AuthFeatures.RefreshTokens)
-            ? $"using {p}.Domain.Entities;\n"
-            : "";
+        var domainUsing = "using " + p + ".Domain.Entities;\n";
 
         var permissionConfig = $$"""
         
@@ -106,10 +104,9 @@ public class AppUser : IdentityUser
 """;
 
         return $$"""
-{{domainUsing}}using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using {{p}}.Domain.Entities;
-
+{{domainUsing}}
 namespace {{p}}.Infrastructure.Persistence;
 
 public class AppDbContext : IdentityDbContext<AppUser, ApplicationRole, string>

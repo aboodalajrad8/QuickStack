@@ -1,25 +1,29 @@
-## .NET
+# Build results
 bin/
 obj/
+publish/
+artifacts/
+[Bb]uild/
 *.user
 *.suo
-*.cache
-*.cacheitems
-*.dll
-*.exe
-*.pdb
 
-## IDE
+# Visual Studio
 .vs/
 .vscode/
-.idea/
-*.sln.DotSettings.user
+*.csproj.user
+*.DotSettings.user
 
-## Build
-packages/
+# NuGet
 *.nupkg
-*.log
+*.snupkg
+packages/
 
-## OS
+# Test output
+TestResults/
+
+# OS
 Thumbs.db
 .DS_Store
+
+# IDE - JetBrains
+.idea/
